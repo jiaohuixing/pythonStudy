@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import random
 
+#session=requests.session()
+houseLists=[]
 def get_agent():
     '''
     模拟header的user-agent字段，
@@ -16,13 +18,14 @@ def get_agent():
     fakeheader['User-agent'] = agents[random.randint(0, len(agents))]
     return fakeheader
 
+
 def get_html(url):
     try:
         r = requests.get(url,timeout=30,headers=get_agent())
         r.raise_for_status()
         # r.endcodding = r.apparent_endconding
         r.encoding='utf-8'
-        print(r.cookies)
+        #print(r.text)
         return r.text
     except:
         return "ERROR"
@@ -32,12 +35,26 @@ def parse_html(html):
     #定义解析规则
     for list in soup.select('#houselist-mod-new .list-item'):
         #输出名称 href
+        house = []
         for ll in list.select('.house-details .houseListTitle'):
-            print(ll.get_text(),ll['href'])
+            #print(ll.get_text(),ll['href'])
+            house.append(ll.get_text())
+            house.append(ll['href'])
         #房子的详细信息，后续进行拆分
         for dd in list.select('.house-details .details-item'):
-            print(dd.get_text().strip())
-
+            #print(dd.get_text().strip())
+            house.append(dd.get_text().strip())
+        # print(house)
+        #房子tag
+        try:
+            for tt in list.select('.details-item details-bottom'):
+                house.append(tt.get_text())
+        except:
+            house.append('null')
+        #房子价格
+        # for pp in
+        houseLists.append(house)
+    print(houseLists)
 url = 'https://xa.anjuke.com/sale/changanb/p1/#filtersort'
 
 parse_html(get_html(url))

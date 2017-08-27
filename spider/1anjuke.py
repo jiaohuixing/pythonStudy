@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import random
 
-#session=requests.session()
+session=requests.session()
 houseLists=[]
 def get_agent():
     '''
@@ -21,7 +21,7 @@ def get_agent():
 
 def get_html(url):
     try:
-        r = requests.get(url,timeout=30,headers=get_agent())
+        r = session.get(url,timeout=30,headers=get_agent())
         r.raise_for_status()
         # r.endcodding = r.apparent_endconding
         r.encoding='utf-8'
@@ -38,23 +38,33 @@ def parse_html(html):
         house = []
         for ll in list.select('.house-details .houseListTitle'):
             #print(ll.get_text(),ll['href'])
-            house.append(ll.get_text())
+            house.append(ll.get_text().strip())
             house.append(ll['href'])
         #房子的详细信息，后续进行拆分
         for dd in list.select('.house-details .details-item'):
             #print(dd.get_text().strip())
+            #可以使用geocoding反查经度纬度
             house.append(dd.get_text().strip())
         # print(house)
-        #房子tag
+        #房子tag 如果没有tags-bottom,则用 details-bottom
         try:
-            for tt in list.select('.details-item details-bottom'):
-                house.append(tt.get_text())
-        except:
-            house.append('null')
-        #房子价格
-        # for pp in
+            for tt in list.select('div.tags-bottom'):
+                house.append(tt.get_text().strip())
+        except Exception as e:
+            print(e)
+            try:
+                for tt in list.select('.details-item details-bottom'):
+                    house.append(tt.get_text().strip())
+            except:
+                house.append('null')
+        #房子价格 pro-price
+        for pp in list.select('div.pro-price'):
+            house.append(pp.get_text().strip())
+
         houseLists.append(house)
-    print(houseLists)
+    print('共爬取{}条'.format(len(houseLists)))
+    for house in houseLists:
+        print(house)
 url = 'https://xa.anjuke.com/sale/changanb/p1/#filtersort'
 
 parse_html(get_html(url))

@@ -1,9 +1,15 @@
 import requests
 from bs4 import BeautifulSoup
-import random
+import random,time
 
+
+url = 'https://xa.anjuke.com/sale/changanb/p1/#filtersort'
 session=requests.session()
 houseLists=[]
+global next_url
+global spider
+spider = True
+next_url = url
 def get_agent():
     '''
     模拟header的user-agent字段，
@@ -32,6 +38,16 @@ def get_html(url):
 
 def parse_html(html):
     soup = BeautifulSoup(html,'html.parser')
+    #解析下一页
+    try:
+        next_url=soup.select('.multi-page .aNxt')[0].attrs['href']
+        # print('开始解析：'+ next_url)
+    except Exception as e:
+        print('异常了：'+ e)
+        spider = False
+
+    if (not spider):
+        return
     #定义解析规则
     for list in soup.select('#houselist-mod-new .list-item'):
         #输出名称 href
@@ -44,7 +60,7 @@ def parse_html(html):
         for dd in list.select('.house-details .details-item'):
             #print(dd.get_text().strip())
             #可以使用geocoding反查经度纬度
-            house.append(dd.get_text().strip())
+            house.append(dd.get_text().replace('\ue147','').replace('\xa0','').replace('\n','').strip())
         # print(house)
         #房子tag 如果没有tags-bottom,则用 details-bottom
         try:
@@ -63,8 +79,13 @@ def parse_html(html):
 
         houseLists.append(house)
     print('共爬取{}条'.format(len(houseLists)))
-    for house in houseLists:
-        print(house)
-url = 'https://xa.anjuke.com/sale/changanb/p1/#filtersort'
+    # for house in houseLists:
+    #     print(house[0])
 
-parse_html(get_html(url))
+def main_spider():
+    while (spider):
+        print('开始解析：' + next_url)
+        parse_html(get_html(next_url))
+        time.sleep(3)
+
+main_spider()

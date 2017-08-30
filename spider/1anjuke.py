@@ -6,8 +6,7 @@ import random,time
 url = 'https://xa.anjuke.com/sale/changanb/p1/#filtersort'
 session=requests.session()
 houseLists=[]
-global next_url
-global spider
+next_url=url
 spider = True
 next_url = url
 def get_agent():
@@ -40,10 +39,12 @@ def parse_html(html):
     soup = BeautifulSoup(html,'html.parser')
     #解析下一页
     try:
+        global  next_url
         next_url=soup.select('.multi-page .aNxt')[0].attrs['href']
         # print('开始解析：'+ next_url)
     except Exception as e:
         print('异常了：'+ e)
+        global spider
         spider = False
 
     if (not spider):

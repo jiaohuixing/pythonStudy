@@ -27,6 +27,7 @@ def get_agent():
 def get_html(url):
     try:
         r = session.get(url,timeout=30,headers=get_agent())
+        print(session.headers)
         r.raise_for_status()
         # r.endcodding = r.apparent_endconding
         r.encoding='utf-8'
@@ -43,7 +44,7 @@ def parse_html(html):
         next_url=soup.select('.multi-page .aNxt')[0].attrs['href']
         # print('开始解析：'+ next_url)
     except Exception as e:
-        print('异常了：'+ e)
+        print('异常了：'+ html)
         global spider
         spider = False
 
@@ -87,6 +88,6 @@ def main_spider():
     while (spider):
         print('开始解析：' + next_url)
         parse_html(get_html(next_url))
-        time.sleep(3)
+        time.sleep(10)
 
 main_spider()
